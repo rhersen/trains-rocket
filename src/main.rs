@@ -3,6 +3,7 @@ extern crate rocket;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Error;
+use rocket_dyn_templates::Template;
 use train_announcement::TrainAnnouncement;
 use types::Root;
 
@@ -30,9 +31,18 @@ async fn index() -> String {
     }
 }
 
+#[get("/")]
+fn trains() -> Template {
+    let context = {};
+    Template::render("trains", &context)
+}
+
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index])
+    rocket::build()
+        .mount("/text", routes![index])
+        .mount("/trains", routes![trains])
+        .attach(Template::fairing())
 }
 
 async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
