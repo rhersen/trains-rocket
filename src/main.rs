@@ -11,9 +11,21 @@ mod types;
 
 #[get("/")]
 async fn index() -> String {
-    let result = post_xml_data().await;
-    match result {
-        Ok(announcements) => format!("{} announcements found", announcements.len()),
+    match post_xml_data().await {
+        Ok(announcements) => announcements
+            .iter()
+            .map(|it| {
+                format!(
+                    "{}\t{}\t{}\t{} {}",
+                    it.train_ident(),
+                    it.to_location(),
+                    it.activity_type(),
+                    it.advertised_time(),
+                    it.time_at_location()
+                )
+            })
+            .collect::<Vec<String>>()
+            .join("\n"),
         Err(e) => format!("Error: {}", e),
     }
 }
@@ -24,11 +36,8 @@ fn rocket() -> _ {
 }
 
 async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
-    let client = reqwest::Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, "application/xml".parse().unwrap());
-
-    let api_key = std::env::var("TRAFIKVERKET_API_KEY").unwrap_or_default();
 
     let xml_data = format!(
         r#"
@@ -38,8 +47,8 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
             <FILTER>
                 <AND>
                     <EQ name='LocationSignature' value='Tul' />
-                    <GT name='AdvertisedTimeAtLocation' value='2024-02-09T13:00:04.137Z' />
-                    <LT name='AdvertisedTimeAtLocation' value='2024-02-09T13:59:04.137Z' />
+                    <GT name='AdvertisedTimeAtLocation' value='2024-02-09T14:00:04.137Z' />
+                    <LT name='AdvertisedTimeAtLocation' value='2024-02-09T14:59:04.137Z' />
                 </AND>
             </FILTER>
             <INCLUDE>ActivityType</INCLUDE>
@@ -50,9 +59,9 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
         </QUERY>
     </REQUEST>
 "#,
-        api_key
+        std::env::var("TRAFIKVERKET_API_KEY").unwrap_or_default()
     );
-    let res = client
+    let res = reqwest::Client::new()
         .post("https://api.trafikinfo.trafikverket.se/v2/data.json")
         .headers(headers)
         .body(xml_data)
