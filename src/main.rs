@@ -2,8 +2,9 @@
 extern crate rocket;
 
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn index() -> String {
+    let api_key = std::env::var("TRAFIKVERKET_API_KEY").unwrap_or_default();
+    format!("{}, {}", "Hello", api_key)
 }
 
 #[launch]
