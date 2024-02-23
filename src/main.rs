@@ -31,7 +31,7 @@ async fn text() -> String {
     }
 }
 
-#[get("/trains")]
+#[get("/")]
 async fn trains() -> Template {
     match post_xml_data().await {
         Ok(announcements) => {
