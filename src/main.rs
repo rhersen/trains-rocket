@@ -8,6 +8,7 @@ use rocket_dyn_templates::Template;
 use std::ops::{Add, Sub};
 use train_announcement::TrainAnnouncement;
 use types::Root;
+use types::TrainInfo;
 
 mod train_announcement;
 mod types;
@@ -38,12 +39,34 @@ async fn trains() -> Template {
     match post_xml_data().await {
         Ok(announcements) => {
             let mut context = std::collections::HashMap::new();
-            context.insert("trains", announcements);
+            context.insert(
+                "trains",
+                announcements
+                    .iter()
+                    .map(|it| transform(it))
+                    .collect::<Vec<TrainInfo>>(),
+            );
             Template::render("trains", context)
         }
 
         Err(_e) => Template::render("trains", {}),
     }
+}
+fn transform(it: &TrainAnnouncement) -> TrainInfo {
+    let trainIdent = it.train_ident();
+    let toLocation = it.to_location();
+    let activityType = it.activity_type();
+    let advertisedTime = it.advertised_time();
+    let timeAtLocation = it.time_at_location();
+
+    let x = TrainInfo {
+        train_ident: trainIdent,
+        to_location: toLocation,
+        activity_type: activityType,
+        advertised_time: advertisedTime,
+        time_at_location: timeAtLocation,
+    };
+    return x;
 }
 
 #[launch]

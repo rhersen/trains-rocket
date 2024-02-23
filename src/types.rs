@@ -11,6 +11,15 @@ pub struct Location {
     pub Order: i32,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct TrainInfo {
+    pub train_ident: String,
+    pub to_location: String,
+    pub activity_type: String,
+    pub advertised_time: String,
+    pub time_at_location: String,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct Result {
     pub TrainAnnouncement: Vec<TrainAnnouncement>,

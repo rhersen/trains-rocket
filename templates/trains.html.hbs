@@ -3,10 +3,11 @@
     <table>
         {{#each trains}}
             <tr>
-                <td>{{this.AdvertisedTrainIdent}}</td>
-                <td>{{this.ActivityType}}</td>
-                <td>{{this.AdvertisedTimeAtLocation}}</td>
-                <td>{{this.TimeAtLocationWithSeconds}}</td>
+                <td>{{this.train_ident}}</td>
+                <td>{{this.to_location}}</td>
+                <td>{{this.activity_type}}</td>
+                <td>{{this.advertised_time}}</td>
+                <td>{{this.time_at_location}}</td>
             </tr>
         {{/each}}
     </table>
