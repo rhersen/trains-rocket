@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate rocket;
 
+use chrono;
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Error;
 use rocket_dyn_templates::Template;
+use std::ops::{Add, Sub};
 use train_announcement::TrainAnnouncement;
 use types::Root;
 
@@ -56,6 +58,10 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, "application/xml".parse().unwrap());
 
+    let now = chrono::Utc::now();
+    let since = now.sub(chrono::Duration::hours(1));
+    let until = now.add(chrono::Duration::hours(1));
+
     let xml_data = format!(
         r#"
     <REQUEST>
@@ -64,8 +70,8 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
             <FILTER>
                 <AND>
                     <EQ name='LocationSignature' value='Tul' />
-                    <GT name='AdvertisedTimeAtLocation' value='2024-02-23T08:00:00.137Z' />
-                    <LT name='AdvertisedTimeAtLocation' value='2024-02-23T08:59:59.137Z' />
+                    <GT name='AdvertisedTimeAtLocation' value='{}' />
+                    <LT name='AdvertisedTimeAtLocation' value='{}' />
                 </AND>
             </FILTER>
             <INCLUDE>ActivityType</INCLUDE>
@@ -76,7 +82,9 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
         </QUERY>
     </REQUEST>
 "#,
-        std::env::var("TRAFIKVERKET_API_KEY").unwrap_or_default()
+        std::env::var("TRAFIKVERKET_API_KEY").unwrap_or_default(),
+        since.to_rfc3339(),
+        until.to_rfc3339()
     );
     let res = reqwest::Client::new()
         .post("https://api.trafikinfo.trafikverket.se/v2/data.json")
