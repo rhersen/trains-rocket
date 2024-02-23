@@ -1,4 +1,13 @@
 <div>
     <h1>Home</h1>
-    <p>Welcome to the home page</p>
+    <table>
+        {{#each trains}}
+            <tr>
+                <td>{{this.AdvertisedTrainIdent}}</td>
+                <td>{{this.ActivityType}}</td>
+                <td>{{this.AdvertisedTimeAtLocation}}</td>
+                <td>{{this.TimeAtLocationWithSeconds}}</td>
+            </tr>
+        {{/each}}
+    </table>
 </div>

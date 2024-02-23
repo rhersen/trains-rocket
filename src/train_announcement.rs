@@ -1,9 +1,9 @@
 #![allow(non_snake_case)]
 
 use crate::types::Location;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TrainAnnouncement {
     ActivityType: String,
     AdvertisedTimeAtLocation: String,

@@ -1,9 +1,10 @@
 #![allow(non_snake_case)]
 
 use crate::train_announcement::TrainAnnouncement;
+use rocket::serde::Serialize;
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Location {
     pub LocationName: String,
     pub Priority: i32,

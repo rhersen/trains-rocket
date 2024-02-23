@@ -10,8 +10,8 @@ use types::Root;
 mod train_announcement;
 mod types;
 
-#[get("/")]
-async fn index() -> String {
+#[get("/text")]
+async fn text() -> String {
     match post_xml_data().await {
         Ok(announcements) => announcements
             .iter()
@@ -31,17 +31,24 @@ async fn index() -> String {
     }
 }
 
-#[get("/")]
-fn trains() -> Template {
-    let context = {};
-    Template::render("trains", &context)
+#[get("/trains")]
+async fn trains() -> Template {
+    match post_xml_data().await {
+        Ok(announcements) => {
+            let mut context = std::collections::HashMap::new();
+            context.insert("trains", announcements);
+            Template::render("trains", context)
+        }
+
+        Err(_e) => Template::render("trains", {}),
+    }
 }
 
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/text", routes![index])
-        .mount("/trains", routes![trains])
+        .mount("/", routes![text])
+        .mount("/", routes![trains])
         .attach(Template::fairing())
 }
 
@@ -57,8 +64,8 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
             <FILTER>
                 <AND>
                     <EQ name='LocationSignature' value='Tul' />
-                    <GT name='AdvertisedTimeAtLocation' value='2024-02-09T14:00:04.137Z' />
-                    <LT name='AdvertisedTimeAtLocation' value='2024-02-09T14:59:04.137Z' />
+                    <GT name='AdvertisedTimeAtLocation' value='2024-02-23T08:00:00.137Z' />
+                    <LT name='AdvertisedTimeAtLocation' value='2024-02-23T08:59:59.137Z' />
                 </AND>
             </FILTER>
             <INCLUDE>ActivityType</INCLUDE>
