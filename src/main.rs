@@ -4,6 +4,7 @@ extern crate rocket;
 use chrono;
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Error;
+use rocket_dyn_templates::context;
 use rocket_dyn_templates::Template;
 use std::ops::{Add, Sub};
 use train_announcement::TrainAnnouncement;
@@ -12,6 +13,11 @@ use types::TrainInfo;
 
 mod train_announcement;
 mod types;
+
+#[get("/")]
+async fn index() -> Template {
+    return Template::render("index", {});
+}
 
 #[get("/text")]
 async fn text() -> String {
@@ -37,34 +43,29 @@ async fn text() -> String {
 #[get("/trains")]
 async fn trains() -> Template {
     match post_xml_data().await {
-        Ok(announcements) => {
-            let mut context = std::collections::HashMap::new();
-            context.insert(
-                "trains",
-                announcements
+        Ok(announcements) => Template::render(
+            "trains",
+            context! {
+                location_signature: "Tul",
+                trains: announcements
                     .iter()
                     .map(|it| transform(it))
-                    .collect::<Vec<TrainInfo>>(),
-            );
-            Template::render("trains", context)
-        }
+                    .collect::<Vec<TrainInfo>>()
+
+            },
+        ),
 
         Err(_e) => Template::render("trains", {}),
     }
 }
-fn transform(it: &TrainAnnouncement) -> TrainInfo {
-    let trainIdent = it.train_ident();
-    let toLocation = it.to_location();
-    let activityType = it.activity_type();
-    let advertisedTime = it.advertised_time();
-    let timeAtLocation = it.time_at_location();
 
+fn transform(it: &TrainAnnouncement) -> TrainInfo {
     let x = TrainInfo {
-        train_ident: trainIdent,
-        to_location: toLocation,
-        activity_type: activityType,
-        advertised_time: advertisedTime,
-        time_at_location: timeAtLocation,
+        train_ident: it.train_ident(),
+        to_location: it.to_location(),
+        activity_type: it.activity_type(),
+        advertised_time: it.advertised_time(),
+        time_at_location: it.time_at_location(),
     };
     return x;
 }
@@ -72,6 +73,7 @@ fn transform(it: &TrainAnnouncement) -> TrainInfo {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
+        .mount("/", routes![index])
         .mount("/", routes![text])
         .mount("/", routes![trains])
         .attach(Template::fairing())
