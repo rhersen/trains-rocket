@@ -14,7 +14,7 @@ use types::TrainInfo;
 mod train_announcement;
 mod types;
 
-#[get("/")]
+#[get("/index")]
 async fn index() -> Template {
     return Template::render("index", {});
 }
