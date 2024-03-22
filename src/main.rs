@@ -43,17 +43,15 @@ async fn text() -> String {
 #[get("/trains")]
 async fn trains() -> Template {
     match post_xml_data().await {
-        Ok(announcements) => Template::render(
-            "trains",
-            context! {
-                location_signature: "Tul",
-                trains: announcements
-                    .iter()
-                    .map(|it| transform(it))
-                    .collect::<Vec<TrainInfo>>()
+        Ok(announcements) => {
+            let mut trains: Vec<TrainInfo> = announcements.iter().map(|it| transform(it)).collect();
+            trains.sort_by(|a, b| a.advertised_time.cmp(&b.advertised_time));
 
-            },
-        ),
+            Template::render(
+                "trains",
+                context! {location_signature: "Tul", trains: trains},
+            )
+        }
 
         Err(_e) => Template::render("trains", {}),
     }
