@@ -19,9 +19,11 @@ async fn index() -> Template {
     Template::render("index", {})
 }
 
+const LOCATION_SIGNATURE: &'static str = "Cst";
+
 #[get("/text")]
 async fn text() -> String {
-    match post_xml_data().await {
+    match post_xml_data(LOCATION_SIGNATURE).await {
         Ok(announcements) => announcements
             .iter()
             .map(|it| {
@@ -42,7 +44,7 @@ async fn text() -> String {
 
 #[get("/trains")]
 async fn trains() -> Template {
-    match post_xml_data().await {
+    match post_xml_data(LOCATION_SIGNATURE).await {
         Ok(announcements) => {
             let mut trains: Vec<TrainInfo> =
                 announcements.iter().map(|it| it.transform()).collect();
@@ -50,7 +52,7 @@ async fn trains() -> Template {
 
             Template::render(
                 "trains",
-                context! {location_signature: "Tul", trains: trains},
+                context! {location_signature: LOCATION_SIGNATURE, trains: trains},
             )
         }
 
@@ -65,7 +67,7 @@ fn rocket() -> _ {
         .attach(Template::fairing())
 }
 
-async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
+async fn post_xml_data(location_signature: &str) -> Result<Vec<TrainAnnouncement>, Error> {
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, "application/xml".parse().unwrap());
 
@@ -80,7 +82,7 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
         <QUERY objecttype='TrainAnnouncement' schemaversion='1.6'>
             <FILTER>
                 <AND>
-                    <EQ name='LocationSignature' value='Tul' />
+                    <EQ name='LocationSignature' value='{}' />
                     <GT name='AdvertisedTimeAtLocation' value='{}' />
                     <LT name='AdvertisedTimeAtLocation' value='{}' />
                 </AND>
@@ -94,6 +96,7 @@ async fn post_xml_data() -> Result<Vec<TrainAnnouncement>, Error> {
     </REQUEST>
 "#,
         std::env::var("TRAFIKVERKET_API_KEY").unwrap_or_default(),
+        location_signature,
         since.to_rfc3339(),
         until.to_rfc3339()
     );
