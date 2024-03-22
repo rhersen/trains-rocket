@@ -13,11 +13,9 @@ async fn index() -> Template {
     Template::render("index", {})
 }
 
-const LOCATION_SIGNATURE: &'static str = "Sst";
-
-#[get("/text")]
-async fn text() -> String {
-    match train_announcement::fetch(LOCATION_SIGNATURE).await {
+#[get("/text/<location_signature>")]
+async fn text(location_signature: &str) -> String {
+    match train_announcement::fetch(location_signature).await {
         Ok(announcements) => announcements
             .iter()
             .map(|it| {
@@ -36,9 +34,9 @@ async fn text() -> String {
     }
 }
 
-#[get("/trains")]
-async fn trains() -> Template {
-    match train_announcement::fetch(LOCATION_SIGNATURE).await {
+#[get("/trains/<location_signature>")]
+async fn trains(location_signature: &str) -> Template {
+    match train_announcement::fetch(location_signature).await {
         Ok(announcements) => {
             let mut trains: Vec<TrainInfo> =
                 announcements.iter().map(|it| it.transform()).collect();
@@ -46,7 +44,7 @@ async fn trains() -> Template {
 
             Template::render(
                 "trains",
-                context! {location_signature: LOCATION_SIGNATURE, trains: trains},
+                context! {location_signature: location_signature, trains: trains},
             )
         }
 
