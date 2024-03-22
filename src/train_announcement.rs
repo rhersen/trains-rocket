@@ -11,6 +11,7 @@ pub struct TrainAnnouncement {
     ActivityType: String,
     AdvertisedTimeAtLocation: String,
     AdvertisedTrainIdent: String,
+    EstimatedTimeAtLocation: Option<String>,
     TimeAtLocationWithSeconds: Option<String>,
     ToLocation: Vec<Location>,
 }
@@ -32,10 +33,17 @@ impl TrainAnnouncement {
             .join(", ")
     }
 
+    pub(crate) fn estimated_time(&self) -> String {
+        match &self.EstimatedTimeAtLocation {
+            Some(time) => time[11..16].to_string(),
+            None => "".to_string(),
+        }
+    }
+
     pub(crate) fn time_at_location(&self) -> String {
         match &self.TimeAtLocationWithSeconds {
             Some(time) => time[11..19].to_string(),
-            None => "-".to_string(),
+            None => "".to_string(),
         }
     }
 
@@ -49,6 +57,7 @@ impl TrainAnnouncement {
             to_location: self.to_location(),
             activity_type: self.activity_type(),
             advertised_time: self.advertised_time(),
+            estimated_time: self.estimated_time(),
             time_at_location: self.time_at_location(),
         }
     }
@@ -59,8 +68,8 @@ pub(crate) async fn fetch(location_signature: &str) -> Result<Vec<TrainAnnouncem
     headers.insert(CONTENT_TYPE, "application/xml".parse().unwrap());
 
     let now = chrono::Utc::now();
-    let since = now.sub(chrono::Duration::hours(1));
-    let until = now.add(chrono::Duration::hours(1));
+    let since = now.sub(chrono::Duration::minutes(32));
+    let until = now.add(chrono::Duration::minutes(32));
 
     let xml_data = format!(
         r#"
@@ -77,6 +86,7 @@ pub(crate) async fn fetch(location_signature: &str) -> Result<Vec<TrainAnnouncem
             <INCLUDE>ActivityType</INCLUDE>
             <INCLUDE>AdvertisedTimeAtLocation</INCLUDE>
             <INCLUDE>AdvertisedTrainIdent</INCLUDE>
+            <INCLUDE>EstimatedTimeAtLocation</INCLUDE>
             <INCLUDE>TimeAtLocationWithSeconds</INCLUDE>
             <INCLUDE>ToLocation</INCLUDE>
         </QUERY>

@@ -26,6 +26,7 @@
         <th>To</th>
         <th>Activity</th>
         <th>Advertised</th>
+        <th>Estimated</th>
         <th>Actual</th>
         {{#each trains}}
             <tr>
@@ -33,6 +34,7 @@
                 <td>{{this.to_location}}</td>
                 <td>{{this.activity_type}}</td>
                 <td>{{this.advertised_time}}</td>
+                <td>{{this.estimated_time}}</td>
                 <td>{{this.time_at_location}}</td>
             </tr>
         {{/each}}

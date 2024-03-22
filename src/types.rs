@@ -17,6 +17,7 @@ pub struct TrainInfo {
     pub to_location: String,
     pub activity_type: String,
     pub advertised_time: String,
+    pub estimated_time: String,
     pub time_at_location: String,
 }
 
