@@ -13,7 +13,7 @@ async fn index() -> Template {
     Template::render("index", {})
 }
 
-const LOCATION_SIGNATURE: &'static str = "Tul";
+const LOCATION_SIGNATURE: &'static str = "Sst";
 
 #[get("/text")]
 async fn text() -> String {
@@ -50,7 +50,7 @@ async fn trains() -> Template {
             )
         }
 
-        Err(_e) => Template::render("trains", {}),
+        Err(e) => Template::render("error", context! {error: e.to_string()}),
     }
 }
 

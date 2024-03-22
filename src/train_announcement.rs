@@ -81,6 +81,7 @@ pub(crate) async fn fetch(location_signature: &str) -> Result<Vec<TrainAnnouncem
                     <EQ name='LocationSignature' value='{}' />
                     <GT name='AdvertisedTimeAtLocation' value='{}' />
                     <LT name='AdvertisedTimeAtLocation' value='{}' />
+                    <EXISTS name='ToLocation' value='true' />
                 </AND>
             </FILTER>
             <INCLUDE>ActivityType</INCLUDE>
@@ -106,9 +107,8 @@ pub(crate) async fn fetch(location_signature: &str) -> Result<Vec<TrainAnnouncem
 
     println!("Status: {}", res.status());
 
-    let data: Root = res.json().await?;
-
-    let mut vec = data.RESPONSE.RESULT[0].TrainAnnouncement.clone();
-    vec.sort_by(|a, b| a.train_ident().cmp(&b.train_ident()));
-    Ok(vec)
+    match res.json::<Root>().await {
+        Ok(data) => Ok(data.RESPONSE.RESULT[0].TrainAnnouncement.clone()),
+        Err(e) => Err(e),
+    }
 }
