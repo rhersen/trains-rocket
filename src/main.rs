@@ -16,7 +16,7 @@ mod types;
 
 #[get("/index")]
 async fn index() -> Template {
-    return Template::render("index", {});
+    Template::render("index", {})
 }
 
 #[get("/text")]
@@ -44,7 +44,8 @@ async fn text() -> String {
 async fn trains() -> Template {
     match post_xml_data().await {
         Ok(announcements) => {
-            let mut trains: Vec<TrainInfo> = announcements.iter().map(|it| transform(it)).collect();
+            let mut trains: Vec<TrainInfo> =
+                announcements.iter().map(|it| it.transform()).collect();
             trains.sort_by(|a, b| a.advertised_time.cmp(&b.advertised_time));
 
             Template::render(
@@ -57,23 +58,10 @@ async fn trains() -> Template {
     }
 }
 
-fn transform(it: &TrainAnnouncement) -> TrainInfo {
-    let x = TrainInfo {
-        train_ident: it.train_ident(),
-        to_location: it.to_location(),
-        activity_type: it.activity_type(),
-        advertised_time: it.advertised_time(),
-        time_at_location: it.time_at_location(),
-    };
-    return x;
-}
-
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![index])
-        .mount("/", routes![text])
-        .mount("/", routes![trains])
+        .mount("/", routes![index, text, trains])
         .attach(Template::fairing())
 }
 

@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::types::Location;
+use crate::types::{Location, TrainInfo};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -38,5 +38,15 @@ impl TrainAnnouncement {
 
     pub(crate) fn train_ident(&self) -> String {
         self.AdvertisedTrainIdent.to_string()
+    }
+
+    pub(crate) fn transform(&self) -> TrainInfo {
+        TrainInfo {
+            train_ident: self.train_ident(),
+            to_location: self.to_location(),
+            activity_type: self.activity_type(),
+            advertised_time: self.advertised_time(),
+            time_at_location: self.time_at_location(),
+        }
     }
 }
